@@ -1,8 +1,33 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { getVideoHistoryAPI, removeHistoryAPI } from '../Services/allAPI';
 
 
-function History() {
+function History(setDeleteHistory) {
+  const [videoHistory, setVideoHistory] = useState([])
+
+  console.log(videoHistory);
+  useEffect(() => {
+    getAllHistory()
+  }, [])
+
+  const getAllHistory = async () => {
+    try {
+      const result = await getVideoHistoryAPI()
+      setVideoHistory(result.data)
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const handleRemoveHistory=async(videoId)=>{
+    try {
+      await removeHistoryAPI(videoId)
+      getAllHistory()
+    } catch (err) {
+      console.log(err);
+    }
+  }
   return (
     <div className='container my-5'>
       <div className="d-flex justify-content-between">
@@ -20,13 +45,20 @@ function History() {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>1</td>
-            <td>Avesham trailer</td>
-            <td><a href="https://www.youtube.com/embed/L0yEMl8PXnw" target='_blank'>https://www.youtube.com/embed/L0yEMl8PXnw</a></td>
-            <td>22/4/2024 10:45AM</td>
-            <td><button className='btn'><i className='fa-solid fa-trash text-danger'></i></button></td>
-          </tr>
+          {
+            videoHistory.length > 0 ?
+              videoHistory?.map((item, index) => (
+                <tr key={item?.id}>
+                  <td>{index + 1}</td>
+                  <td>{item?.caption}</td>
+                  <td><a href={item?.youtubeURL} target='_blank'>{item?.youtubeURL}</a></td>
+                  <td>{item?.timeStamp}</td>
+                  <td><button onClick={()=>handleRemoveHistory(item?.id)} className='btn'><i className='fa-solid fa-trash text-danger'></i></button></td>
+                </tr>
+              ))
+              :
+              <div className="text-danger fw-bolder p-2">Your watch history is empty</div>
+          }
         </tbody>
       </table>
     </div>
